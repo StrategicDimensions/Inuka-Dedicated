@@ -299,6 +299,7 @@
                 <field name="statement_reconciled"/>
                 <field name="amount"/>
                 <field name="journal_currency_id" invisible="1"/>
+                <field name="move_id" readonly="1"/>
                 <button name="manual_reconcile" string="Reconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', True)]}"/>
                 <button name="manual_unreconcile" string="Unreconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', False)]}"/>
             </tree>
