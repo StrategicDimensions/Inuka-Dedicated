@@ -199,3 +199,4 @@ class ReservedFund(models.Model):
     order_id = fields.Many2one('sale.order', readonly=True, requied=True)
     customer_id = fields.Many2one('res.partner', readonly=True, requied=True)
     active = fields.Boolean(default=True, readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)

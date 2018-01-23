@@ -16,6 +16,7 @@ class InukaRewards(models.Model):
     cash = fields.Float(string='Cash')
     product_id = fields.Many2one('product.product', string='Product', required=True)
     reward_type = fields.Selection([('monthly', 'Monthly'), ('quarterly', 'Quarterly'), ('annual', 'Annual')], string='Type')
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
 
 class RewardCategory(models.Model):

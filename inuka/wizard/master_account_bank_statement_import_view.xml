@@ -140,8 +140,8 @@
                                     <span>Reconciliation</span>
                                 </div>
                                 <div>
-                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="action_open_reconcile">Reconcile</a>
-                                    <span t-if="dashboard.number_to_reconcile == 0" class="text-muted">Nothing to Reconcile</span>
+                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="action_open_reconcile">Allocate</a>
+                                    <span t-if="dashboard.number_to_reconcile == 0" class="text-muted">Nothing to Allocate</span>
                                 </div>
                                 <div>
                                     <a type="object" name="open_action_with_context" context="{'action_name': 'action_account_reconcile_model', 'use_domain': True}" groups="account.group_account_manager">Reconciliation Models</a>
@@ -262,7 +262,7 @@
                             - If there are statements to reconcile, a link to reconcile them -->
                         <div class="col-xs-6 o_kanban_primary_left">
                             <t t-if="dashboard.number_to_reconcile > 0">
-                                <button type="object" name="action_open_reconcile" class="btn btn-primary btn-sm"> Reconcile <t t-esc="dashboard.number_to_reconcile"/> Items</button>
+                                <button type="object" name="action_open_reconcile" class="btn btn-primary btn-sm"> Allocate <t t-esc="dashboard.number_to_reconcile"/> Items</button>
                             </t>
                             <t t-if="journal_type == 'bank'">
                                 <div name="bank_journal_default_cta" t-if="dashboard.bank_statements_source == 'undefined'">

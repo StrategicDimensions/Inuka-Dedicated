@@ -32,6 +32,9 @@
         'views/helpdesk_ticket_views.xml',
         'wizard/partner_watchlist_comment_view.xml',
     ],
+    'qweb': [
+        "static/src/xml/account_reconciliation.xml",
+    ],
     'test': [
     ],
     'demo': [

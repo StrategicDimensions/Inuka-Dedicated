@@ -19,6 +19,7 @@ class SmsList(models.Model):
     description = fields.Text()
     active = fields.Boolean(default=True)
     sms_recipients_count = fields.Integer(compute="_compute_sms_recipients_count", string="Number of Recipients")
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
     def _compute_sms_recipients_count(self):
         SmsRecipients = self.env['sms.recipients']
@@ -51,6 +52,7 @@ class SmsRecipients(models.Model):
     unsubscription_date = fields.Datetime("Unsubscription Date")
     optout = fields.Boolean("Opt Out")
     sms_list_id = fields.Many2one("sms.list", string="SMS List")
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
 
 class MassSms(models.Model):
@@ -87,6 +89,7 @@ class MassSms(models.Model):
     sms_participant_count = fields.Integer(compute="_compute_sms_participant_count", string="Number of Participants")
     participant_generated = fields.Boolean(copy=False)
     color = fields.Integer()
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
     def _compute_statistics(self):
         SmsMessage = self.env['sms.message']
@@ -225,6 +228,7 @@ class SmsParticipant(models.Model):
         ('cancelled', 'Cancelled')
         ], default='running', index=True, required=True,
     )
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
 
 class SmsShortcode(models.Model):
@@ -258,6 +262,7 @@ class SmsMessage(models.Model):
         ('013', 'Clickatell cancelled message delivery'),
         ('014', 'Maximum MT limit exceeded'),
         ], string='Delivary State', readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
     @api.multi
     def send_sms_reply(self):
