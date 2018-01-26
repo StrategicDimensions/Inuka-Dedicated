@@ -101,6 +101,9 @@ class SaleOrder(models.Model):
 
     @api.model
     def create(self, vals):
+        context = dict(self.env.context or {})
+        if not context.get('kit_order'):
+            raise UserError(_("You cannot create an order for a Candidate."))
         channel = self.env['mail.channel'].search([('name', 'like', 'Escalations')], limit=1)
         res = super(SaleOrder, self).create(vals)
         if res.partner_id.mobile:
