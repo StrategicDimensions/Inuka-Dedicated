@@ -63,7 +63,7 @@ class ResPartner(models.Model):
         ('junior', 'Junior kit'),
         ('senior', 'Senior kit'),
         ('not_indicated', 'Kit Not Indicated')
-        ], string='Kit', required=True)
+        ], string='Kit')
     source = fields.Selection([
         ('email', 'Email'),
         ('facebook', 'Facebook'),
