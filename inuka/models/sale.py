@@ -184,6 +184,7 @@ class SaleOrder(models.Model):
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
         res['sale_date'] = self.sale_date
+        res['channel'] = self.channel
         return res
 
 
