@@ -273,7 +273,6 @@
                     <group>
                         <group>
                             <field name="watchlist"/>
-                            <field name="is_top_level_member"/>
                         </group>
                         <group>
                             <field name="source"/>
@@ -330,8 +329,8 @@
                 <field name="home_phone" widget="phone" attrs="{'invisible': [('customer', '=', False)]}"/>
             </field>
             <field name="lang" position="after">
-                <field name="upline" domain="[('customer', '=', True), ('id', '!=', id)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True), ('is_top_level_member', '=', False)]}"/>
-                <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True), ('is_top_level_member', '=', False)]}"/>
+                <field name="upline" domain="[('customer', '=', True), ('id', '!=', id)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
+                <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))], 'required': [('customer', '=', True)]}"/>
             </field>
             <field name="vat" position="replace"/>
