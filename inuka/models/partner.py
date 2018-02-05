@@ -199,6 +199,7 @@ class ResPartner(models.Model):
         ('iphone', 'iPhone'),
     ], string="Device Type", readonly=True)
     is_device_live = fields.Boolean("Is Device Live", readonly=True)
+    is_top_level_member = fields.Boolean("Top Level Member")
 
     _sql_constraints = [
         ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
