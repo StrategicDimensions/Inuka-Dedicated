@@ -10,6 +10,7 @@ from random import randint
 from odoo import api, fields, models, _
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.exceptions import ValidationError
+from odoo.tools import email_split
 
 
 class Users(models.Model):
@@ -18,6 +19,19 @@ class Users(models.Model):
     @api.model
     def create(self, vals):
         return super(Users, self.with_context(from_user=True)).create(vals)
+
+    @api.model
+    def reset_password(self, login):
+        """ retrieve the user corresponding to login (login or email),
+            and reset their password
+        """
+        users = self.search([('login', '=', login)])
+        if not users:
+            users = self.search([('email', '=', login)])
+        if len(users) != 1:
+            raise Exception(_('Reset password: invalid username or email'))
+        return users.action_reset_password()
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -622,6 +636,8 @@ class ResPartner(models.Model):
                 })
                 msg_compose.send_entity()
 
+            related_partner = self.env['portal.wizard'].create({'user_ids': [(0,0,{'partner_id': res.id,'email': res.email, 'in_portal': True})]})
+            related_partner.action_apply()
         return res
 
     @api.model
@@ -892,3 +908,31 @@ class PerformanceHistory(models.Model):
     new_senior_recruits = fields.Integer("# of New Senior Recruits")
     new_junior_recruits = fields.Integer("# of New Junior Recruits")
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
+
+
+def extract_email(email):
+    """ extract the email address from a user-friendly email address """
+    addresses = email_split(email)
+    return addresses[0] if addresses else ''
+
+
+class PortalWizardUser(models.TransientModel):
+    _inherit = 'portal.wizard.user'
+
+    @api.multi
+    def _create_user(self):
+        """ create a new user for wizard_user.partner_id
+            :returns record of res.users
+        """
+        partner = self.partner_id
+        company_id = self.env.context.get('company_id')
+        return self.env['res.users'].with_context(no_reset_password=True).create({
+            'name': partner.name,
+            'email': extract_email(self.email),
+            'login': partner.ref,
+            'password': partner.ref,
+            'partner_id': self.partner_id.id,
+            'company_id': company_id,
+            'company_ids': [(6, 0, [company_id])],
+            'groups_id': [(6, 0, [])],
+        })
