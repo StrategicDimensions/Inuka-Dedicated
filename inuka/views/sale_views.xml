@@ -260,7 +260,7 @@
         <field name="arch" type="xml">
             <form string="Sale Upload">
             <header>
-                <button name="button_start" string="Start" type="object" states="new" class="btn-primary"/>
+                <button name="button_start" string="Start" type="object" states="new,inprogress" class="btn-primary"/>
                 <button name="button_cancel" string="Cancel" type="object" states="new,inprogress" class="btn-primary"/>
                 <field name="state" widget="statusbar" statusbar_visible="new,inprogress,completed,error,cancelled"/>
             </header>
@@ -279,7 +279,7 @@
                     <group>
                         <field name="end_time" readonly="1"/>
                         <field name="create_date" string="Date" readonly="1"/>
-                        <field name="end_point"/>
+                        <field name="end_point" readonly="1"/>
                     </group>
                 </group>
                 <group>
