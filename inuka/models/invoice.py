@@ -28,6 +28,7 @@ class AccountInvoice(models.Model):
         ('portal', 'Online Portal'),
         ('mobile', 'Mobile Application'),
     ], string="Channel")
+    team_id = fields.Many2one(string='Sales Team')
 
     @api.depends('invoice_line_ids','invoice_line_ids.pv')
     def _compute_tot_pv(self):
@@ -96,3 +97,9 @@ class AccountInvoiceLine(models.Model):
         self.pv = self.product_id.pv * self.quantity
         self.unit_pv = self.product_id.pv
         super(AccountInvoiceLine, self)._set_additional_fields(invoice)
+
+
+class AccountInvoiceReport(models.Model):
+    _inherit = 'account.invoice.report'
+
+    team_id = fields.Many2one('crm.team', string='Sales Team')

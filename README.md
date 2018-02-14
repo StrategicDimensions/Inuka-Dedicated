@@ -1,1 +1,1 @@
-# inukadedicated
+# inuka
