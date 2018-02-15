@@ -18,6 +18,10 @@ class SaleOrder(models.Model):
     def _default_expiry_date(self):
         return date.today() + relativedelta(days=90)
 
+    @api.model
+    def _get_default_team(self):
+        return self.env['crm.team']._get_default_team_id()
+
     @api.depends('order_line','order_line.pv')
     def _compute_tot_pv(self):
         for order in self:
@@ -74,7 +78,7 @@ class SaleOrder(models.Model):
         ('portal', 'Online Portal'),
         ('mobile', 'Mobile Application'),
     ], string="Channel")
-    team_id = fields.Many2one(string='Sales Team')
+    team_id = fields.Many2one('crm.team', 'Sales Team', change_default=True, default=_get_default_team, oldname='section_id')
 
     @api.depends('state', 'order_line', 'order_line.qty_delivered', 'order_line.product_uom_qty')
     def _compute_delivery_status(self):
