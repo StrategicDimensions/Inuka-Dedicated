@@ -98,6 +98,15 @@ class AccountInvoiceLine(models.Model):
         self.unit_pv = self.product_id.pv
         super(AccountInvoiceLine, self)._set_additional_fields(invoice)
 
+    @api.onchange('discount')
+    def _set_pv_zero(self):
+        if self.discount > 0:
+            self.pv = 0
+            self.unit_pv = 0
+        else:
+            self.pv = self.product_id.pv * self.quantity
+            self.unit_pv = self.product_id.pv
+
 
 class AccountInvoiceReport(models.Model):
     _inherit = 'account.invoice.report'

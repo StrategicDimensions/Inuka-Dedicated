@@ -206,6 +206,15 @@ class SaleOrderLine(models.Model):
     def _onchange_product_uom_qty(self):
         self.pv = self.product_id.pv * self.product_uom_qty
 
+    @api.onchange('discount')
+    def _set_pv_zero(self):
+        if self.discount > 0:
+            self.pv = 0
+            self.unit_pv = 0
+        else:
+            self.pv = self.product_id.pv * self.product_uom_qty
+            self.unit_pv = self.product_id.pv
+
 
 class SaleAdvancePaymentInv(models.TransientModel):
     _inherit = "sale.advance.payment.inv"
