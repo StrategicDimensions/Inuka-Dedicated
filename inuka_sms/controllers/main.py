@@ -51,7 +51,7 @@ class SMSPushNotification(http.Controller):
             'keyword': kwargs.get('keyword'),
             'direction': 'I',
             'by_partner_id': request.env.user.partner_id.id,
-            'model_id': model_id,
+            'model_id': model_id.id,
             'record_id': record_id,
             'record_name': record_name,
         })
