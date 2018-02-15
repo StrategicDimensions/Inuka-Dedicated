@@ -6,11 +6,15 @@ import re
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from random import randint
+import logging
 
 from odoo import api, fields, models, _
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.exceptions import ValidationError
 from odoo.tools import email_split
+from odoo.addons.auth_signup.models.res_partner import SignupError, now
+
+_logger = logging.getLogger(__name__)
 
 
 class Users(models.Model):
@@ -31,6 +35,51 @@ class Users(models.Model):
         if len(users) != 1:
             raise Exception(_('Reset password: invalid username or email'))
         return users.action_reset_password()
+
+
+    @api.multi
+    def action_reset_password(self):
+        """ create signup token for each user, and send their signup url by email """
+        # prepare reset password signup
+        create_mode = bool(self.env.context.get('create_user'))
+
+        # no time limit for initial invitation, only for reset password
+        expiration = False if create_mode else now(days=+1)
+
+        self.mapped('partner_id').signup_prepare(signup_type="reset", expiration=expiration)
+
+        # send email to users with their signup url
+        template = False
+        if create_mode:
+            try:
+                template = self.env.ref('auth_signup.set_password_email', raise_if_not_found=False)
+            except ValueError:
+                pass
+        if not template:
+            template = self.env.ref('auth_signup.reset_password_email')
+        assert template._name == 'mail.template'
+
+        for user in self:
+            if user.email and self.env.context.get('reset_via_mail'):
+                template.with_context(lang=user.lang).send_mail(user.id, force_send=True, raise_exception=True)
+                _logger.info("Password reset email sent for user <%s> to <%s>", user.login, user.email)
+            if user.partner_id.mobile and self.env.context.get('reset_via_sms'):
+                user.send_reset_sms()
+
+    @api.multi
+    def send_reset_sms(self):
+        self.ensure_one()
+        sms_template = self.env.ref('sms_frame.sms_template_reset_password')
+        msg_compose = self.env['sms.compose'].create({
+            'record_id': self.id,
+            'model': 'res.users',
+            'sms_template_id': sms_template.id,
+            'from_mobile_id': sms_template.from_mobile_verified_id.id,
+            'to_number': self.partner_id.mobile,
+            'sms_content': """Dear %s, A password reset was requested for your Inuka Portal/Mobile App. Change your password by following this link which is valid for 24 hrs:
+%s""" %(self.name, self.partner_id.signup_url)
+        })
+        msg_compose.send_entity()
 
 
 class ResPartner(models.Model):
