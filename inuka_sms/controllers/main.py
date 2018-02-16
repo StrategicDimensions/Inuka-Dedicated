@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
+from datetime import date, datetime, timedelta
 
 from odoo import fields, http
 from odoo.http import request
@@ -28,7 +27,9 @@ class SMSPushNotification(http.Controller):
         msg += "<li>%s" % (kwargs.get('text'))
         msg += "</ul>"
         partner = request.env['res.partner'].sudo().search([('mobile', '=', kwargs.get('from'))], limit=1)
-        helpdesk_ticket = request.env['helpdesk.ticket'].sudo().search([('partner_id', '=', partner.id), ('create_date','>=', (date.today()-relativedelta(day=1)).strftime('%Y-%m-%d'))], limit=1, order="create_date desc")
+        helpdesk_ticket = False
+        if kwargs.get('keyword'):
+            helpdesk_ticket = request.env['helpdesk.ticket'].sudo().search([('partner_id', '=', partner.id), ('create_date','>=', (date.today()-timedelta(days=1)).strftime('%Y-%m-%d'))], limit=1, order="create_date desc")
         if helpdesk_ticket:
             stage = request.env['helpdesk.stage'].sudo().search([('name', '=', 'In Progress')], limit=1)
             helpdesk_ticket.sudo().write({'stage_id': stage.id})
