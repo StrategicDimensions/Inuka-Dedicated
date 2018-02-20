@@ -240,6 +240,7 @@ class SmsShortcode(models.Model):
     sms_template_id = fields.Many2one("sms.template", string="Template")
     member_required = fields.Boolean("Member Required")
     active = fields.Boolean(default=True)
+    no_member_sms_template_id = fields.Many2one("sms.template", string="No Member SMS Template")
 
 
 class SmsMessage(models.Model):
@@ -285,7 +286,17 @@ class SmsMessage(models.Model):
                         'sms_content': message,
                     })
                     msg_compose.send_entity()
-
+            elif shortcode and shortcode.member_required and message.model_id.model != 'res.partner':
+                if message.from_mobile:
+                    msg_compose = SmsCompose.create({
+                        'record_id': message.record_id,
+                        'model': message.model_id.model,
+                        'sms_template_id': shortcode.no_member_sms_template_id.id,
+                        'from_mobile_id': self.env.ref('sms_frame.sms_number_inuka_international').id,
+                        'to_number': message.from_mobile,
+                        'sms_content': shortcode.no_member_sms_template_id.template_body,
+                    })
+                    msg_compose.send_entity()
             elif shortcode and not shortcode.member_required:
                 msg_compose = SmsCompose.create({
                     'record_id': message.record_id,
@@ -344,3 +355,10 @@ class SmsCompose(models.Model):
         if self.media_id:
             attachments.append((self.media_filename, base64.b64decode(self.media_id)) )
         self.env[self.model].search([('id','=', self.record_id)]).message_post(body=self.sms_content, subject="SMS Sent", message_type="comment", subtype_id=sms_subtype.id, attachments=attachments)
+
+
+class SmsAccount(models.Model):
+    _inherit = "sms.account"
+
+    active = fields.Boolean()
+    international = fields.Boolean()
