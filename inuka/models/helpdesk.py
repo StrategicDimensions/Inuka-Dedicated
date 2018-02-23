@@ -78,15 +78,17 @@ class HelpdeskTicket(models.Model):
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+            if not attachments:
+                continue
 
             acc_number = ticket.name.split("[")[1][:-1]
-            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            bank_account_id = ResPartnerBank.search([('acc_number', 'in', (acc_number,'00000'+acc_number))], limit=1).id
             journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
                 if not zipfile.is_zipfile(fp):
-                    raise UserError(_('File is not a zip file!'))
+                    continue
                 if zipfile.is_zipfile(fp):
                     with zipfile.ZipFile(fp, "r") as z:
                         with tempdir() as module_dir:
@@ -110,15 +112,17 @@ class HelpdeskTicket(models.Model):
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+            if not attachments:
+                continue
 
             acc_number = ticket.name.split("[")[1][:-1]
-            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            bank_account_id = ResPartnerBank.search([('acc_number', 'in', (acc_number,'00000'+acc_number))], limit=1).id
             journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
                 if not zipfile.is_zipfile(fp):
-                    raise UserError(_('File is not a zip file!'))
+                    continue
                 if zipfile.is_zipfile(fp):
                     with zipfile.ZipFile(fp, "r") as z:
                         with tempdir() as module_dir:

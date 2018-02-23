@@ -32,6 +32,7 @@ class SmsList(models.Model):
         recipients = self.env['sms.recipients'].search([('sms_list_id', '=', self.id)])
         action = self.env.ref('inuka_sms.action_sms_recipients_form').read()[0]
         action['domain'] = [('id', 'in', recipients.ids)]
+        action['context'] = {'default_sms_list_id': self.id}
         return action
 
 
@@ -53,6 +54,12 @@ class SmsRecipients(models.Model):
     optout = fields.Boolean("Opt Out")
     sms_list_id = fields.Many2one("sms.list", string="SMS List")
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
+
+    @api.onchange('partner_id', 'mobile')
+    def _onchange_member(self):
+        if not self.partner_id and not self.mobile:
+            return
+        self.name = self.partner_id.name or self.mobile
 
 
 class MassSms(models.Model):
@@ -151,7 +158,7 @@ class MassSms(models.Model):
         participants = self.get_remaining_recipients()
         for participant in participants[:self.batch_size]:
             if participant.partner_id.mobile:
-                render_msg = self.env['sms.template'].render_template(self.sms_template_id.template_body, 'res.partner', participant.partner_id.id)
+                render_msg = self.env['sms.template'].render_template(self.sms_template_id.template_body, self.sms_template_id.model_id.model, participant.partner_id.id)
                 message = tools.html2plaintext(render_msg)
                 msg_compose = SmsCompose.create({
                     'record_id': participant.partner_id.id,
@@ -312,6 +319,24 @@ class SmsMessage(models.Model):
 class SmsCompose(models.Model):
     _inherit = "sms.compose"
 
+    @api.model
+    def create(self, vals):
+        if vals is None:
+            vals = {}
+        SmsAccount = self.env['sms.account']
+        SmsNumber = self.env['sms.number']
+        to_number = vals.get('to_number')
+        if to_number:
+            if to_number.startswith('27'):
+                sms_account = SmsAccount.search([('international', '=', False)], limit=1)
+            else:
+                sms_account = SmsAccount.search([('international', '=', True)], limit=1)
+            if not sms_account:
+                sms_account = SmsAccount.search([], limit=1)
+            from_mobile = SmsNumber.search([('account_id', '=', sms_account.id)], limit=1)
+            vals['from_mobile_id'] = from_mobile.id
+        return super(SmsCompose, self).create(vals)
+
     @api.multi
     def send_entity(self):
         """Attempt to send the sms, if any error comes back show it to the user and only log the smses that successfully sent"""
@@ -360,5 +385,5 @@ class SmsCompose(models.Model):
 class SmsAccount(models.Model):
     _inherit = "sms.account"
 
-    active = fields.Boolean()
+    active = fields.Boolean(default=True)
     international = fields.Boolean()
